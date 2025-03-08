@@ -6,16 +6,24 @@ import {
   deleteOrder,
 } from "../../api/orderApi";
 import { getUsers } from "../../api/userApi";
+import { getProducts } from "../../api/productApi";
 
 const OrderManager = () => {
   const [orders, setOrders] = useState([]);
+  console.log(orders);
+
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [newOrder, setNewOrder] = useState({
     userId: "",
     totalAmount: "",
     paymentMethod: "",
     status: "",
     orderDate: "",
+    products: {
+      productId: "",
+      quantity: 1,
+    },
   });
   const [editOrder, setEditOrder] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
@@ -27,6 +35,8 @@ const OrderManager = () => {
       try {
         const response = await getUsers(); // Hàm lấy danh sách người dùng
         setUsers(response.data);
+        const rs = await getProducts();
+        setProducts(rs.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách người dùng:", error);
       }
@@ -86,7 +96,8 @@ const OrderManager = () => {
         <thead>
           <tr>
             <th>Order ID</th>
-            <th>User ID</th>
+            <th>User</th>
+            <th>Product</th>
             <th>Total Amount</th>
             <th>Payment Method</th>
             <th>Status</th>
@@ -98,7 +109,14 @@ const OrderManager = () => {
           {orders.map((order, index) => (
             <tr key={index}>
               <td>{order._id}</td>
-              <td>{order.userId}</td>
+              <td>{order.userId.username}</td>
+              <td>
+                {order.products.map((item, index) => (
+                  <div key="index">
+                    {index}: {item.productId.name}
+                  </div>
+                ))}
+              </td>
               <td>{order.totalAmount}</td>
               <td>{order.paymentMethod}</td>
               <td>{order.status}</td>
@@ -155,6 +173,46 @@ const OrderManager = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Product</label>
+                <select
+                  className="form-control"
+                  value={newOrder?.products?.productId}
+                  onChange={(e) =>
+                    setNewOrder({
+                      ...newOrder,
+                      products: {
+                        ...newOrder.products, // Giữ nguyên các giá trị cũ trong products
+                        productId: e.target.value, // Cập nhật productId
+                      },
+                    })
+                  }
+                >
+                  <option value="">Chọn sản phẩm</option>
+                  {products.map((product) => (
+                    <option key={product._id} value={product._id}>
+                      {product.name} {/* Hoặc trường bạn muốn hiển thị */}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Quantity</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={newOrder.products.quantity}
+                  onChange={(e) =>
+                    setNewOrder({
+                      ...newOrder,
+                      products: {
+                        ...newOrder.products, // Giữ nguyên các giá trị cũ trong products
+                        quantity: e.target.value, // Cập nhật productId
+                      },
+                    })
+                  }
+                />
               </div>
               {["totalAmount", "paymentMethod", "status", "orderDate"].map(
                 (field) => (

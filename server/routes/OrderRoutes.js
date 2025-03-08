@@ -5,7 +5,9 @@ const Order = require("../models/Order.js");
 // 📜 Lấy danh sách đơn hàng
 router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find();
+    const orders = await Order.find()
+      .populate("userId")
+      .populate("products.productId");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi lấy danh sách đơn hàng", error });

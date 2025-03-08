@@ -36,17 +36,17 @@ const ProductManager = () => {
           order,
           keyword
         );
-        setProducts(response.data);
-        console.log(response);
 
-        setTotalPages(products.length < limit ? page : page + 1);
+        setProducts(response.data.products);
+
+        setTotalPages(response.data.pageCount);
       } catch (error) {
         console.error("Lỗi khi lấy sản phẩm:", error);
       }
     };
     fetchProducts();
   }, [page, sortBy, order, keyword, limit]);
-
+  // ham them san pham
   const handleAddProduct = async () => {
     try {
       await addProduct(newProduct);
@@ -66,11 +66,13 @@ const ProductManager = () => {
         order,
         keyword
       );
-      setProducts(response.data);
+      setProducts(response.data.products);
+      alert("Them san phampham thanh cong");
     } catch (error) {
       console.error("Lỗi khi thêm sản phẩm:", error);
     }
   };
+  // ham cap nhatnhat san pham
 
   const handleEditProduct = async () => {
     try {
@@ -84,12 +86,14 @@ const ProductManager = () => {
           order,
           keyword
         );
-        setProducts(response.data);
+        setProducts(response.data.products);
+        alert("Cap nhat san pham   thanh cong");
       }
     } catch (error) {
       console.error("Lỗi khi cập nhật sản phẩm:", error);
     }
   };
+  // ham xoa san pham
 
   const handleDeleteProduct = async () => {
     try {
@@ -97,6 +101,7 @@ const ProductManager = () => {
         await deleteProduct(productToDelete._id);
         setProducts(products.filter((p) => p._id !== productToDelete._id));
         setProductToDelete(null);
+        alert("Xoa san phampham thanh cong");
       }
     } catch (error) {
       console.error("Lỗi khi xóa sản phẩm:", error);
@@ -131,7 +136,101 @@ const ProductManager = () => {
         >
           <i className="bi bi-plus-lg"></i> Thêm sản phẩm
         </button>
+        {/* Modal Thêm sản phẩm */}
+        <div className="modal fade" id="addProductModal" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Thêm sản phẩm</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-2">
+                  <label className="form-label">Tên sản phẩm</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập tên sản phẩm"
+                    value={newProduct.name}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, name: e.target.value })
+                    }
+                  />
+                </div>
 
+                <div className="mb-2">
+                  <label className="form-label">Giá sản phẩm</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Nhập giá sản phẩm"
+                    value={newProduct.price}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, price: e.target.value })
+                    }
+                    min={1}
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">URL hình ảnh</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập URL hình ảnh"
+                    value={newProduct.image}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, image: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">Số lượng trong kho</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Nhập số lượng"
+                    value={newProduct.stock}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, stock: e.target.value })
+                    }
+                    min={1}
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">Mô tả sản phẩm</label>
+                  <textarea
+                    className="form-control"
+                    placeholder="Nhập mô tả sản phẩm"
+                    value={newProduct.description}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleAddProduct}
+                  data-bs-dismiss="modal"
+                >
+                  Thêm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Dropdown sắp xếp */}
         <div className="d-flex gap-3">
           <div className="d-flex align-items-center gap-2">
@@ -216,102 +315,6 @@ const ProductManager = () => {
           ))}
         </tbody>
       </table>
-
-      {/* Modal Thêm sản phẩm */}
-      <div className="modal fade" id="addProductModal" tabIndex="-1">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Thêm sản phẩm</h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <div className="mb-2">
-                <label className="form-label">Tên sản phẩm</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Nhập tên sản phẩm"
-                  value={newProduct.name}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, name: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Giá sản phẩm</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Nhập giá sản phẩm"
-                  value={newProduct.price}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, price: e.target.value })
-                  }
-                  min={1}
-                />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">URL hình ảnh</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Nhập URL hình ảnh"
-                  value={newProduct.image}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, image: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Số lượng trong kho</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Nhập số lượng"
-                  value={newProduct.stock}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, stock: e.target.value })
-                  }
-                  min={1}
-                />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Mô tả sản phẩm</label>
-                <textarea
-                  className="form-control"
-                  placeholder="Nhập mô tả sản phẩm"
-                  value={newProduct.description}
-                  onChange={(e) =>
-                    setNewProduct({
-                      ...newProduct,
-                      description: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button
-                className="btn btn-primary"
-                onClick={handleAddProduct}
-                data-bs-dismiss="modal"
-              >
-                Thêm
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Modal Sửa sản phẩm */}
       <div className="modal fade" id="editProductModal" tabIndex="-1">
@@ -442,7 +445,7 @@ const ProductManager = () => {
         </span>
         <button
           className="primary btn"
-          disabled={page === limit}
+          disabled={page === totalPages}
           onClick={() => handlePageChange(page + 1)}
         >
           Sau

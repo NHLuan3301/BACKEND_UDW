@@ -4,7 +4,7 @@ const Product = require("../models/Product.js");
 
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find();
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi lấy danh sách sản phẩm", error });
@@ -13,13 +13,11 @@ router.get("/", async (req, res) => {
 // ➕ Tạo sản phẩm mới (Kiểm tra company trước khi tạo)
 router.post("/", async (req, res) => {
   try {
-    const { name, price, image, stock, description } =
-      req.body;
+    const { name, price, image, stock, description } = req.body;
 
     if (!name || !price || !stock) {
       return res.status(400).json({ message: "Thiếu thông tin sản phẩm" });
     }
-
 
     const newProduct = new Product({
       name,
@@ -37,12 +35,12 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✏️ Cập nhật sản phẩm (Kiểm tra company nếu có cập nhật)
+// ✏️ Cập nhật sản phẩm (Kiểm tra nếu có cập nhật)
 router.put("/:id", async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+      req.params.id, // nhan vao id san pham tu param
+      req.body, // nhan du lieu san pham update tu body
       { new: true }
     );
 
@@ -70,25 +68,47 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: "Lỗi khi xóa sản phẩm", error });
   }
 });
-
+// Phan trang
 router.get("/search", async (req, res) => {
   try {
+    // lay du lieu tu nguoi dung truyen vao de xu ly
     let { page, limit, sortBy, order, keyword } = req.query;
-    page = parseInt(page) || 1; // Mặc định trang 1
-    limit = parseInt(limit) || 10; // Mặc định lấy 10 sản phẩm mỗi trang
-    order = order === "desc" ? -1 : 1; // Mặc định tăng dần (asc)
 
+    // Chuyển đổi page và limit sang kiểu số nguyên, mặc định page = 1, limit = 10 nếu không có giá trị từ client
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+
+    // Xác định thứ tự sắp xếp: nếu order = "desc" thì -1 (giảm dần), ngược lại là 1 (tăng dần)
+    order = order === "desc" ? -1 : 1;
+
+    // Tính toán số lượng bản ghi cần bỏ qua để phân trang (skip)
     const skip = (page - 1) * limit;
+
+    // Tạo bộ lọc tìm kiếm: nếu có từ khóa keyword thì tìm các sản phẩm có tên chứa từ khóa đó (không phân biệt hoa/thường)
     const filter = keyword ? { name: { $regex: keyword, $options: "i" } } : {};
 
+    // Truy vấn danh sách sản phẩm từ database dựa trên bộ lọc và phân trang
     const products = await Product.find(filter)
-      .sort({ [sortBy]: order })
-      .skip(skip)
-      .limit(limit);
+      .sort({ [sortBy]: order }) // Sắp xếp theo trường sortBy với thứ tự order
+      .skip(skip) // Bỏ qua số lượng bản ghi tương ứng với trang hiện tại
+      .limit(limit); // Giới hạn số lượng sản phẩm trả về trên một trang
 
-    res.json(products);
+    // Đếm tổng số sản phẩm khớp với điều kiện tìm kiếm
+    const totalProducts = await Product.countDocuments(filter);
+
+    // Tính tổng số trang (làm tròn lên)
+    const pageCount = Math.ceil(totalProducts / Number(limit));
+
+    // Trả về dữ liệu dưới dạng JSON
+    res.json({
+      products: products, // Danh sách sản phẩm
+      totalProducts: totalProducts, // Tổng số sản phẩm
+      pageCount: pageCount, // Tổng số trang
+    });
   } catch (error) {
+    // Xử lý lỗi nếu có vấn đề trong quá trình truy vấn
     res.status(500).json({ message: "Lỗi khi lấy danh sách sản phẩm", error });
   }
 });
+
 module.exports = router;

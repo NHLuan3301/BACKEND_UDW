@@ -77,7 +77,7 @@ function HomePage() {
           >
             {products.map((product) => (
               <SwiperSlide key={product._id}>
-                <div className="bg-white p-4 shadow-md rounded-lg hover:shadow-lg transition duration-300">
+                <div className="bg-white p-4 shadow-md rounded-lg hover:shadow-lg transition duration-300 mb-8">
                   <img
                     src={product.image}
                     alt={product.name}
